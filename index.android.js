@@ -11,42 +11,55 @@ var {
   Text,
   View,
 } = React;
+var AuthForm = require('./auth').Form;
 
-var BrdgmeMobile = React.createClass({
-  render: function() {
+class BrdgmeMobile extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      showConfirmation: false,
+    };
+  }
+  render() {
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 50,
+            textAlign: 'center',
+            marginBottom: 5,
+          }}
+          onPress={() => this.setState({showConfirmation: true})}
+        >
+          brdg.me
         </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
+        <Text
+          style={{
+            textAlign: 'center',
+            marginBottom: 50,
+          }}
+        >
+          board games with friends by email
         </Text>
-        <Text style={styles.instructions}>
-          Shake or press menu button for dev menu
-        </Text>
+        <View
+          style={{
+            marginLeft: 40,
+            marginRight: 40,
+          }}
+        >
+          <AuthForm
+            showConfirmation={this.state.showConfirmation}
+          />
+        </View>
       </View>
     );
   }
-});
-
-var styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
+}
 
 AppRegistry.registerComponent('BrdgmeMobile', () => BrdgmeMobile);
