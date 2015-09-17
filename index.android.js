@@ -7,6 +7,7 @@
 var React = require('react-native');
 var {
   AppRegistry,
+  AsyncStorage,
   StyleSheet,
   Text,
   View,
@@ -17,46 +18,88 @@ class BrdgmeMobile extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      showConfirmation: false,
+      email: null,
+      token: null,
+      loading: true,
     };
+    AsyncStorage.multiGet(['email', 'token'])
+      .then((values) => {
+        var newState = {
+          loading: false,
+        };
+        values.forEach((pair) => {
+          newState[pair[0]] = pair[1];
+        });
+        this.setState(newState);
+      });
+  }
+  onAuthenticate(email, token) {
+    this.setState({
+      email: email,
+      token: token,
+    });
+    AsyncStorage.multiSet([
+      ['email', email],
+      ['token', token],
+    ]);
+  }
+  logout() {
+    this.setState({
+      token: null,
+    });
+    AsyncStorage.removeItem('token');
   }
   render() {
     return (
       <View
         style={{
           flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
         }}
       >
-        <Text
-          style={{
-            fontSize: 50,
-            textAlign: 'center',
-            marginBottom: 5,
-          }}
-          onPress={() => this.setState({showConfirmation: true})}
-        >
-          brdg.me
-        </Text>
-        <Text
-          style={{
-            textAlign: 'center',
-            marginBottom: 50,
-          }}
-        >
-          board games with friends by email
-        </Text>
-        <View
-          style={{
-            marginLeft: 40,
-            marginRight: 40,
-          }}
-        >
-          <AuthForm
-            showConfirmation={this.state.showConfirmation}
-          />
-        </View>
+        { this.state.loading || !this.state.token ?
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 50,
+                textAlign: 'center',
+                marginBottom: 5,
+              }}
+              onPress={() => this.setState({showConfirmation: true})}
+            >
+              brdg.me
+            </Text>
+            <Text
+              style={{
+                textAlign: 'center',
+                marginBottom: 50,
+              }}
+            >
+              board games with friends by email
+            </Text>
+            { !this.state.loading ?
+              <View
+                style={{
+                  marginLeft: 40,
+                  marginRight: 40,
+                }}
+              >
+                <AuthForm
+                  initialEmail={this.state.email}
+                  onAuthenticate={(email, token) => this.onAuthenticate(email, token)}
+                />
+              </View> : null
+            }
+          </View> :
+          <Text
+            onPress={() => this.logout()}
+          >Logged in as {this.state.email}</Text>
+        }
       </View>
     );
   }

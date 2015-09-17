@@ -2,34 +2,97 @@
 
 var React = require('react-native');
 var {
+  ProgressBarAndroid,
   Text,
   TextInput,
   View,
 } = React;
+var queryString = require('query-string');
+
+let
+  ModeEnteringEmail = 0,
+  ModeRequestingConfirmation = 1,
+  ModeEnteringConfirmation = 2,
+  ModeRequestingToken = 3;
 
 class Form extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: props.email,
-      confirmation: props.confirmation,
-      showConfirmation: props.showConfirmation,
+      mode: ModeEnteringEmail,
+      email: props.initialEmail,
+      confirmation: props.initialConfirmation,
     };
+  }
+  requestConfirmation() {
+    this.setState({mode: ModeRequestingConfirmation});
+    fetch('https://api.brdg.me/auth/request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: queryString.stringify({
+        email: this.state.email,
+      }),
+    })
+      .then((response) => {
+        this.setState({
+          mode: ModeEnteringConfirmation,
+          confirmation: '',
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        this.setState({mode: ModeEnteringEmail});
+      });
+  }
+  requestToken() {
+    this.setState({mode: ModeRequestingConfirmation});
+    fetch('https://api.brdg.me/auth/confirm', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: queryString.stringify({
+        email: this.state.email,
+        confirmation: this.state.confirmation,
+      }),
+    })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.props.onAuthenticate(this.state.email, responseJson);
+        this.setState({
+          mode: ModeEnteringEmail,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        this.setState({mode: ModeEnteringConfirmation});
+      });
   }
   render() {
     return (
-      <View>
+      <View
+        style={{
+          alignItems: 'center',
+        }}
+      >
         <TextInput
           placeholder="email address"
           autoCorrect={false}
           autoFocus={false}
           keyboardType="email-address"
-          editable={!this.state.showConfirmation}
+          editable={this.state.mode === ModeEnteringEmail}
           onChangeText={(text) => this.setState({email: text})}
-          onSubmitEditing={() => this.setState({showConfirmation: true})}
+          onSubmitEditing={() => this.requestConfirmation()}
           value={this.state.email}
         />
-        { this.state.showConfirmation ?
+        { this.state.mode === ModeRequestingConfirmation ?
+          <ProgressBarAndroid />
+          : null
+        }
+        { this.state.mode === ModeEnteringConfirmation ||
+          this.state.mode === ModeRequestingToken ?
           <View>
             <Text
               style={{
@@ -45,16 +108,19 @@ class Form extends React.Component {
               autoFocus={false}
               keyboardType="numeric"
               onChangeText={(text) => this.setState({confirmation: text})}
+              onSubmitEditing={() => this.requestToken()}
               value={this.state.confirmation}
             />
-          </View> : null }
+          </View>
+          : null
+        }
       </View>
     );
   }
 }
 Form.propTypes = {
-  email: React.PropTypes.string,
-  confirmation: React.PropTypes.string,
-  showConfirmation: React.PropTypes.bool,
+  initialEmail: React.PropTypes.string,
+  initialConfirmation: React.PropTypes.string,
+  onAuthenticate: React.PropTypes.func.isRequired,
 };
 exports.Form = Form;
