@@ -10,6 +10,7 @@ var {
   AsyncStorage,
   StyleSheet,
   Text,
+  ToolbarAndroid,
   View,
 } = React;
 var AuthForm = require('./auth').Form;
@@ -48,6 +49,27 @@ class BrdgmeMobile extends React.Component {
       token: null,
     });
     AsyncStorage.removeItem('token');
+  }
+  fetch(input, init) {
+    return fetch(input, init).then((response) => {
+      if (response.status === 401) {
+        this.logout();
+        throw('logged out');
+      }
+      return response;
+    })
+  }
+  onActionSelected(position) {
+    this.titlebarActions()[position].onActionSelected();
+  }
+  titlebarActions() {
+    return [
+      {
+        icon: require('image!ic_local_pizza_white_24dp'),
+        title: 'Log out',
+        onActionSelected: () => this.logout(),
+      }
+    ];
   }
   render() {
     return (
@@ -96,9 +118,19 @@ class BrdgmeMobile extends React.Component {
               </View> : null
             }
           </View> :
-          <Text
-            onPress={() => this.logout()}
-          >Logged in as {this.state.email}</Text>
+          <View>
+            <ToolbarAndroid
+              title="brdg.me"
+              actions={this.titlebarActions()}
+              onActionSelected={(position) => this.onActionSelected(position)}
+              style={{
+                height: 56,
+                backgroundColor: '#607D8B',
+              }}
+            />
+            <Text>Logged in as {this.state.email}</Text>
+            <Text>Token is {this.state.token}</Text>
+          </View>
         }
       </View>
     );
