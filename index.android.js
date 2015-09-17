@@ -10,10 +10,11 @@ var {
   AsyncStorage,
   StyleSheet,
   Text,
-  ToolbarAndroid,
   View,
 } = React;
 var AuthForm = require('./auth').Form;
+var Toolbar = require('./toolbar');
+var Games = require('./games');
 
 class BrdgmeMobile extends React.Component {
   constructor(props) {
@@ -51,25 +52,22 @@ class BrdgmeMobile extends React.Component {
     AsyncStorage.removeItem('token');
   }
   fetch(input, init) {
+    if (!init) {
+      init = {};
+    }
+    if (!init.headers) {
+      init.headers = {};
+    }
+    if (!init.headers.Authorization) {
+      init.headers.Authorization = 'token ' + this.state.token;
+    }
     return fetch(input, init).then((response) => {
       if (response.status === 401) {
         this.logout();
         throw('logged out');
       }
       return response;
-    })
-  }
-  onActionSelected(position) {
-    this.titlebarActions()[position].onActionSelected();
-  }
-  titlebarActions() {
-    return [
-      {
-        icon: require('image!ic_local_pizza_white_24dp'),
-        title: 'Log out',
-        onActionSelected: () => this.logout(),
-      }
-    ];
+    });
   }
   render() {
     return (
@@ -118,19 +116,10 @@ class BrdgmeMobile extends React.Component {
               </View> : null
             }
           </View> :
-          <View>
-            <ToolbarAndroid
-              title="brdg.me"
-              actions={this.titlebarActions()}
-              onActionSelected={(position) => this.onActionSelected(position)}
-              style={{
-                height: 56,
-                backgroundColor: '#607D8B',
-              }}
-            />
-            <Text>Logged in as {this.state.email}</Text>
-            <Text>Token is {this.state.token}</Text>
-          </View>
+          <Games
+            fetch={(input, init) => this.fetch(input, init)}
+            logout={() => this.logout()}
+          />
         }
       </View>
     );
