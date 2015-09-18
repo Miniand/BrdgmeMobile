@@ -80,12 +80,12 @@ class Form extends React.Component {
         <TextInput
           placeholder="email address"
           autoCorrect={false}
-          autoFocus={false}
           keyboardType="email-address"
           editable={this.state.mode === ModeEnteringEmail}
           onChangeText={(text) => this.setState({email: text})}
           onSubmitEditing={() => this.requestConfirmation()}
           value={this.state.email}
+          textAlign='center'
         />
         { this.state.mode === ModeRequestingConfirmation ?
           <ProgressBarAndroid />
@@ -105,11 +105,11 @@ class Form extends React.Component {
             </Text>
             <TextInput
               placeholder="confirmation code"
-              autoFocus={false}
               keyboardType="numeric"
               onChangeText={(text) => this.setState({confirmation: text})}
               onSubmitEditing={() => this.requestToken()}
               value={this.state.confirmation}
+              textAlign='center'
             />
           </View>
           : null

@@ -8,6 +8,7 @@ var React = require('react-native');
 var {
   AppRegistry,
   AsyncStorage,
+  Navigator,
   StyleSheet,
   Text,
   View,
@@ -15,6 +16,7 @@ var {
 var AuthForm = require('./auth').Form;
 var Toolbar = require('./toolbar');
 var Games = require('./games');
+var Game = require('./game');
 
 class BrdgmeMobile extends React.Component {
   constructor(props) {
@@ -116,9 +118,25 @@ class BrdgmeMobile extends React.Component {
               </View> : null
             }
           </View> :
-          <Games
-            fetch={(input, init) => this.fetch(input, init)}
-            logout={() => this.logout()}
+          <Navigator
+            initialRoute={{name: 'Games'}}
+            renderScene={(route, navigator) =>
+              <View style={{flex: 1}}>
+                { route.name === 'Games' ?
+                  <Games
+                    fetch={(input, init) => this.fetch(input, init)}
+                    logout={() => this.logout()}
+                    navigator={navigator}
+                  /> : null }
+                { route.name === 'Game' ?
+                  <Game
+                    id={route.id}
+                    fetch={(input, init) => this.fetch(input, init)}
+                    logout={() => this.logout()}
+                    navigator={navigator}
+                  /> : null}
+              </View>
+            }
           />
         }
       </View>

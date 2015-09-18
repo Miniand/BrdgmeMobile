@@ -3,6 +3,7 @@
 var React = require('react-native');
 var {
   ListView,
+  Navigator,
   ProgressBarAndroid,
   Text,
   TouchableNativeFeedback,
@@ -35,6 +36,7 @@ class Games extends React.Component {
     return (
       <TouchableNativeFeedback
         background={TouchableNativeFeedback.SelectableBackground()}
+        onPress={() => this.props.navigator.push({name: 'Game', id: rowData.id})}
       >
         <View>
           <Text
@@ -79,6 +81,7 @@ class Games extends React.Component {
 Games.propTypes = {
   fetch: React.PropTypes.func.isRequired,
   logout: React.PropTypes.func.isRequired,
+  navigator: React.PropTypes.instanceOf(Navigator).isRequired,
 };
 
 module.exports = Games;
